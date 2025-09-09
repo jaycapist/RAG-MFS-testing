@@ -13,7 +13,7 @@ This workshop is containerized using Docker, which simplifies setup and ensures 
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/Roderick-Tabalba/RAG-workshop.git
+    git clone [https://github.com/Roderick-Tabalba/RAG-workshop.git](https://github.com/UH-CI/RAG-workshop.git)
     cd RAG-workshop
     ```
 
