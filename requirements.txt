@@ -38,6 +38,9 @@ jsonschema
 jsonschema-specifications
 jupyterlab_pygments
 kubernetes
+langchain
+langchain-community
+langchain-huggingface
 markdown-it-py
 MarkupSafe
 mdurl
@@ -63,6 +66,7 @@ pycparser
 pycryptodome
 pydantic
 pydantic_core
+pypdf
 PySocks
 python-dotenv
 regex
