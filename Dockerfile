@@ -23,9 +23,7 @@ RUN pip install notebook jupyterlab selenium
 # Copy code
 COPY . .
 
-EXPOSE 8888
-
 RUN curl https://rclone.org/install.sh | bash
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "env:PORT"]
+CMD ["python", "run.py"]
 
