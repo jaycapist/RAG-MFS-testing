@@ -15,10 +15,12 @@ defusedxml
 distro
 docopt
 durationpy
+fastapi
 fastjsonschema
 filelock
 flatbuffers
 fsspec
+gdown
 google-auth
 googleapis-common-protos
 grpcio
@@ -85,4 +87,5 @@ tokenizers
 torch
 tqdm
 transformers
+uvicorn
 webdriver-manager
