@@ -20,10 +20,15 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install notebook jupyterlab selenium
 
+with open("/app/config/rclone.conf", "w") as f:
+    f.write(os.environ["RCLONE_CONFIG_CONTENT"])
 # Copy code
+COPY config/rclone.conf /app/config/rclone.conf
 COPY . .
 
 EXPOSE 8888
+
+RUN curl https://rclone.org/install.sh | bash
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8888"]
 

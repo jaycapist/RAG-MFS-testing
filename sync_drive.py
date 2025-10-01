@@ -1,15 +1,22 @@
-import os
 import subprocess
+import os
 
-def sync_pdfs_from_drive(folder_id, output_dir="data/Minutes"):
-    print("Downloading PDFs.")
-    os.makedirs(output_dir, exist_ok=True)
-    cmd = [
-        "gdown",
-        "--folder",
-        folder_id,
-        "--output",
-        output_dir,
-        "--quiet"
-    ]
-    subprocess.run(cmd, check=True)
+def ensure_rclone_config():
+    config_path = "/app/config/rclone.conf"
+    os.makedirs(os.path.dirname(config_path), exist_ok=True)
+    if not os.path.exists(config_path):
+        with open(config_path, "w") as f:
+            f.write(os.environ["RCLONE_CONFIG_CONTENT"])
+            
+def sync_from_drive():
+    print("Syncing")
+    os.makedirs("data/", exist_ok=True)
+    
+    try:
+        subprocess.run([
+            "rclone", "copy", "goodrive:", "data/",
+            "--drive-shared-with-me", "--progress"
+        ], check=True)
+        print("Synced")
+    except subprocess.CalledProcessError as e:
+        print("Failed to Sync", e)

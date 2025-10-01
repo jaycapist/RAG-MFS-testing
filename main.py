@@ -5,7 +5,8 @@ import os
 
 load_dotenv()
 
-from sync_drive import sync_pdfs_from_drive
+from sync_drive import sync_from_drive
+from sync_drive import ensure_rclone_config
 from load_pdfs import load_pdfs
 from preprocessing import preprocess_documents
 from retrievers import build_retrievers, get_retriever_for_query
@@ -16,8 +17,11 @@ from printers import print_sources
 app = FastAPI()
 
 print("Pipeline Starting")
-folder_id = "0B5R6pTMzHSzVTWJoSDRVaFBTZnM"
-sync_pdfs_from_drive(folder_id)
+
+@app.on_event("startup")
+def startup_event():
+    ensure_rclone_config()
+    sync_from_drive()
 
 docs = load_pdfs()
 db, split_docs = preprocess_documents(docs)
