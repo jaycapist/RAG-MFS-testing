@@ -21,7 +21,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install notebook jupyterlab selenium
 
 # Copy code
-COPY config/rclone.conf /app/config/rclone.conf
 COPY . .
 
 EXPOSE 8888
