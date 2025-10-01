@@ -1,12 +1,12 @@
-from transformers import pipeline
-from langchain_huggingface import HuggingFacePipeline
+from langchain_openai import ChatOpenAI
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def get_llm():
-    gen = pipeline(
-        task="text2text-generation",
-        model="google/flan-t5-base",
-        max_new_tokens=512,
+    return ChatOpenAI(
+        model=os.getenv("OPENAI_MODEL", "gpt-3.5-turbo"),
         temperature=0,
+        max_tokens=400
     )
-    print("got LLM")
-    return HuggingFacePipeline(pipeline=gen)

@@ -42,6 +42,7 @@ kubernetes
 langchain
 langchain-community
 langchain-huggingface
+langchain-openai
 markdown-it-py
 MarkupSafe
 mdurl
@@ -55,6 +56,7 @@ numpy
 oauthlib
 ollama
 orjson
+openai
 pdfminer
 pdfminer.six
 pillow

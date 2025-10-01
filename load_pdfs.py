@@ -4,7 +4,7 @@ from langchain.document_loaders import PyPDFLoader
 import time, logging, warnings, contextlib, io
 from helpers import add_year_metadata_consistent
 
-def load_pdfs(pdf_dir="data/Minutes/CAPP - Committee on Academic Policy & Planning_"):
+def load_pdfs(pdf_dir="data/"):
     try:
         from pypdf.errors import PdfReadWarning
         warnings.filterwarnings("ignore", category=PdfReadWarning)
