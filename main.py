@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
+import threading  # <--- add this
 
 load_dotenv()
 
@@ -18,31 +19,39 @@ state = {}
 class QueryInput(BaseModel):
     query: str
 
+def run_pipeline():
+    """Runs your heavy pipeline setup in background."""
+    print("Pipeline Starting (background)")
+    ensure_rclone_config()
+    sync_from_drive()
+
+    docs = load_pdfs()
+    db, split_docs = preprocess_documents(docs)
+    bm25, vec, hybrid = build_retrievers(db, split_docs)
+    llm = get_llm()
+
+    # Store in Global State
+    state["db"] = db
+    state["bm25"] = bm25
+    state["vec"] = vec
+    state["hybrid"] = hybrid
+    state["llm"] = llm
+
+    print("Pipeline Ready")
+
 def create_app():
     app = FastAPI()
-    print("Pipeline Starting")
 
     @app.on_event("startup")
     def startup_event():
-        ensure_rclone_config()
-        sync_from_drive()
-
-        docs = load_pdfs()
-        db, split_docs = preprocess_documents(docs)
-        bm25, vec, hybrid = build_retrievers(db, split_docs)
-        llm = get_llm()
-
-        # Store in app state or global var
-        state["db"] = db
-        state["bm25"] = bm25
-        state["vec"] = vec
-        state["hybrid"] = hybrid
-        state["llm"] = llm
-
-        print("Pipeline Ready")
+        # Pipeline Setup in Background Thread
+        threading.Thread(target=run_pipeline, daemon=True).start()
 
     @app.post("/ask")
     async def ask_question(data: QueryInput):
+        if "db" not in state:
+            return {"answer": "Pipeline still starting.", "sources": []}
+
         retr = get_retriever_for_query(data.query, state["db"], state["bm25"], state["hybrid"])
         result = ask_unified(data.query, state["llm"], retr)
         return {
@@ -52,7 +61,7 @@ def create_app():
 
     @app.get("/")
     async def root():
-        return {"status": "Running"}
+        return {"status": "Running", "pipeline_ready": "db" in state}
 
     return app
 
