@@ -25,7 +25,7 @@ COPY . .
 
 RUN curl https://rclone.org/install.sh | bash
 
-EXPOSE 8000
+EXPOSE 10000
 
 CMD ["python", "run.py"]
           

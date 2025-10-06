@@ -6,7 +6,7 @@ load_dotenv()
 
 def get_llm():
     return ChatOpenAI(
-        model=os.getenv("OPENAI_MODEL", "gpt-3.5-turbo"),
+        model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
         temperature=0,
         max_tokens=400
     )

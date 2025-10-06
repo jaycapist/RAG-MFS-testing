@@ -12,5 +12,5 @@ def write_rclone_config():
 
 if __name__ == "__main__":
     write_rclone_config()
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.environ.get("PORT", 10000))
     uvicorn.run(create_app, host="0.0.0.0", port=port)
