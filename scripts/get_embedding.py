@@ -1,12 +1,13 @@
 import os
 import json
 import time
+import uuid
 from tqdm import tqdm
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 from openai import OpenAI
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import PointStruct
-from scripts.chunk_text import chunk_text
+from chunk_text import chunk_text
 import tiktoken
 
 # --- Load env ---
@@ -14,8 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-QDRANT_URL = os.getenv("QDRANT_URL")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
+QDRANT_URL = os.getenv("QDRANT_URL")
 
 clientopenai = OpenAI(api_key=OPENAI_API_KEY)
 tokenizer = tiktoken.encoding_for_model("text-embedding-3-small")
@@ -57,11 +58,11 @@ def embed_batch(batch):
     )
 
 # --- Save progress to disk ---
-def save_embeddings_to_disk(texts, embeddings, metadata_list, path=BATCH_FILE):
+def save_embeddings_to_disk(texts, embeddings, metadata_list, path="embeddings.jsonl"):
     with open(path, "a", encoding="utf-8") as f:
         for i in range(len(texts)):
             data = {
-                "id": hash(texts[i]),
+                "id": str(uuid.uuid4()),  # ✅ Use UUIDs instead of hash()
                 "text": texts[i],
                 "embedding": embeddings[i],
                 "metadata": metadata_list[i]
@@ -75,22 +76,45 @@ def load_saved_embeddings(path=BATCH_FILE):
     with open(path, "r", encoding="utf-8") as f:
         return [json.loads(line) for line in f]
 
+from tenacity import retry, wait_random_exponential, stop_after_attempt
+
+@retry(wait=wait_random_exponential(min=1, max=30), stop=stop_after_attempt(5))
+def safe_upsert(client, collection_name, points):
+    """Handles transient upload issues with automatic retry."""
+    client.upsert(collection_name=collection_name, points=points)
+
+
 # --- Upload to Qdrant ---
-def upload_to_qdrant(data, qdrant):
-    points = [
-        PointStruct(
-            id=item["id"],
-            vector=item["embedding"],
-            payload={"text": item["text"], **item.get("metadata", {})}
-        )
-        for item in data
-    ]
-    qdrant.upload_collection(collection_name=COLLECTION_NAME, points=points)
-    print(f"✅ Uploaded {len(points)} points to Qdrant")
+def upload_to_qdrant(data, qdrant, batch_size=100):
+    print(f"🚀 Uploading {len(data)} embeddings to Qdrant in batches of {batch_size}...")
+
+    for i in range(0, len(data), batch_size):
+        batch = data[i:i+batch_size]
+        points = [
+            PointStruct(
+                id=item["id"],
+                vector=item["embedding"],
+                payload={
+                    "text": item["text"],
+                    **item.get("metadata", {})
+                }
+            )
+            for item in batch
+        ]
+
+        try:
+            safe_upsert(qdrant, COLLECTION_NAME, points)
+            print(f"✅ Uploaded batch {i//batch_size + 1} ({len(points)} points)")
+            time.sleep(0.5)
+        except Exception as e:
+            print(f"❌ Failed to upload batch {i//batch_size + 1}: {e}")
 
 # --- Main embedding pipeline ---
 def get_embedding(docs):
-    qdrant = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+    qdrant = QdrantClient(
+                url=QDRANT_URL,
+                api_key=QDRANT_API_KEY,
+            )
     print(f"🔍 Preparing documents...")
 
     texts, metadatas = [], []
@@ -105,7 +129,9 @@ def get_embedding(docs):
     # ✅ Skip already embedded ones
     saved = load_saved_embeddings()
     saved_ids = {s["id"] for s in saved}
-    remaining = [(t, m) for t, m in zip(texts, metadatas) if hash(t) not in saved_ids]
+    saved_texts = {s["text"] for s in saved}
+    remaining = [(t, m) for t, m in zip(texts, metadatas) if t not in saved_texts]
+
 
     if not remaining:
         print("✅ All chunks already embedded.")
