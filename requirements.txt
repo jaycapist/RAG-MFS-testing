@@ -9,4 +9,4 @@ pyMuPDF
 requests
 tenacity
 tiktoken
-uviicorn
+uvicorn

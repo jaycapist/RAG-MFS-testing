@@ -209,3 +209,4 @@ __marimo__/
 scraped_data/
 data/
 config/rclone.conf
+embeddings.jsonl
