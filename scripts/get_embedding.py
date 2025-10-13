@@ -110,3 +110,37 @@ def embed_query(text: str):
         model="text-embedding-3-small"
     )
     return response.data[0].embedding
+
+import json
+
+def save_embeddings_to_disk(texts, embeddings, metadata_list, path="embeddings.jsonl"):
+    with open(path, "a", encoding="utf-8") as f:
+        for i in range(len(texts)):
+            data = {
+                "id": hash(texts[i]),  # OR: use uuid / hash / custom
+                "text": texts[i],
+                "embedding": embeddings[i],
+                "metadata": metadata_list[i]
+            }
+            f.write(json.dumps(data) + "\n")
+
+def load_saved_embeddings(path="embeddings.jsonl"):
+    with open(path, "r", encoding="utf-8") as f:
+        return [json.loads(line) for line in f]
+
+from qdrant_client.http.models import PointStruct
+
+def upload_to_qdrant(data, client, collection_name):
+    points = []
+    for item in data:
+        points.append(
+            PointStruct(
+                id=item["id"],
+                vector=item["embedding"],
+                payload={
+                    "text": item["text"],
+                    **item.get("metadata", {})
+                }
+            )
+        )
+    client.upload_collection(collection_name=collection_name, points=points)
