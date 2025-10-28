@@ -8,7 +8,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://hawaii.edu"],
+    allow_origins=["https://www.hawaii.edu"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
