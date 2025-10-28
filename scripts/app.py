@@ -2,8 +2,17 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from scripts.retrievers import retrieve_top_k, format_context
 from .qa import answer_question
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://wordpress.com"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class QueryRequest(BaseModel):
     query: str
