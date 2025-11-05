@@ -210,3 +210,5 @@ scraped_data/
 data/
 config/rclone.conf
 embeddings.jsonl
+sync_account.json
+gdrive_map.json

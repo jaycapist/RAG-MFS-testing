@@ -1,6 +1,9 @@
 openai
 qdrant-client
 fastapi
+google-api-python-client
+google-auth
+google-auth-oauthlib
 uvicorn
 tqdm
 python-dotenv
