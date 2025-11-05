@@ -6,7 +6,9 @@ tqdm
 python-dotenv
 pypdf
 pyMuPDF
+rank_bm25
 requests
+scikit-learn
 tenacity
 tiktoken
 uvicorn
