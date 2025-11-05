@@ -2,7 +2,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.http.models import SearchParams
 import os
 from dotenv import load_dotenv
-from get_embedding import embed_query
+from scripts.get_embedding import embed_query
 from rank_bm25 import BM25Okapi
 
 load_dotenv()
