@@ -1,24 +1,22 @@
 import re
 from datetime import datetime
+from collections import Counter
 
 def parse_year_window(q: str):
     q = q.lower()
     this = datetime.now().year
     YEAR = r"(?:19|20)\d{2}"
 
-    # Match ranges like "2010-2015"
     m = re.search(rf"\b({YEAR})\s*(?:-|–|to)\s*({YEAR})\b", q)
     if m:
         y1, y2 = int(m.group(1)), int(m.group(2))
         return (y1, y2) if y1 <= y2 else (y2, y1)
 
-    # Match single years like "2023"
     yrs = [int(y) for y in re.findall(rf"\b{YEAR}\b", q)]
     if yrs:
         y = max(yrs)
         return y, y
 
-    # Match "last 5 years" etc.
     m = re.search(r"(last|past)\s+(\d+)\s+year", q)
     if m:
         n = int(m.group(2))
@@ -37,23 +35,27 @@ def parse_year_window(q: str):
 def add_year_metadata_consistent(docs):
     """
     Adds a 'year' field to each Document's metadata by scanning
-    both the text content and the source path for years.
+    the document text and filename for 4-digit years <= current year.
     """
-    year_pattern = re.compile(r"\b(19[0-9]{2}|20[0-2][0-9]|2025)\b")
+    current_year = datetime.now().year
+    year_pattern = re.compile(r"\b(19\d{2}|20\d{2})\b")
 
     for doc in docs:
-        text = doc.page_content
         metadata = doc.metadata
+        if "year" in metadata:
+            continue
 
-        # Look for year
+        text = doc.page_content
         source = metadata.get("source", "")
-        match_text = year_pattern.search(text)
-        match_source = year_pattern.search(source)
 
-        # Add year
-        if match_text:
-            metadata["year"] = int(match_text.group())
-        elif match_source:
-            metadata["year"] = int(match_source.group())
+        # Find all years in text
+        years_in_text = [int(y) for y in year_pattern.findall(text) if int(y) <= current_year]
+        years_in_source = [int(y) for y in year_pattern.findall(source) if int(y) <= current_year]
+
+        if years_in_text:
+            most_common_year = Counter(years_in_text).most_common(1)[0][0]
+            metadata["year"] = most_common_year
+        elif years_in_source:
+            metadata["year"] = years_in_source[0]
 
         doc.metadata = metadata

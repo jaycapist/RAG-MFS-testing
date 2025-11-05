@@ -3,11 +3,29 @@ from pathlib import Path
 from tqdm import tqdm
 from langchain_core.documents import Document
 from helpers import add_year_metadata_consistent
+import json
+GDRIVE_MAP_PATH = "scripts/gdrive_map.json"
+
+if Path(GDRIVE_MAP_PATH).exists():
+    with open(GDRIVE_MAP_PATH) as f:
+        gdrive_map = json.load(f)
+else:
+    gdrive_map = {}
+
+def get_drive_link(filename):
+    file_id = gdrive_map.get(filename)
+    if file_id:
+        return f"https://drive.google.com/file/d/{file_id}/view"
+    return None
 
 def extract_text_from_pdf(pdf_path):
-    doc = fitz.open(pdf_path)
-    return "\n".join(page.get_text() for page in doc)
-
+    try:
+        doc = fitz.open(pdf_path)
+        text = "\n".join(page.get_text() for page in doc)
+        return text.strip()
+    except Exception as e:
+        return f"__ERROR__: {e}"
+    
 def load_pdfs(pdf_dir="data/"):
     pdf_dir = Path(pdf_dir)
     pdf_paths = sorted(pdf_dir.rglob("*.pdf"))
@@ -18,9 +36,14 @@ def load_pdfs(pdf_dir="data/"):
         try:
             content = extract_text_from_pdf(str(path)).strip()
             if content:
+                filename = path.name
+                metadata = {
+                    "source": filename,
+                    "link": get_drive_link(filename)
+                }
                 doc = Document(
                     page_content=content,
-                    metadata={"source": str(path)}
+                    metadata=metadata
                 )
                 docs.append(doc)
             else:
