@@ -12,5 +12,5 @@ QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 qdrant = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
 data = load_saved_embeddings()
 
-print(f"📦 Loaded {len(data)} saved embeddings from disk")
+print(f"Loaded {len(data)} saved embeddings")
 upload_to_qdrant(data, qdrant, batch_size=100)

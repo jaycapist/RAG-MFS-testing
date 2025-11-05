@@ -20,7 +20,7 @@ qdrant = QdrantClient(
 
 collections = qdrant.get_collections().collections
 if not any(c.name == COLLECTION_NAME for c in collections):
-    print(f"🚧 Collection '{COLLECTION_NAME}' not found. Recreating...")
+    print(f"Collection '{COLLECTION_NAME}' not found")
     qdrant.recreate_collection(
         collection_name=COLLECTION_NAME,
         vectors_config=VectorParams(
@@ -29,7 +29,7 @@ if not any(c.name == COLLECTION_NAME for c in collections):
         )
     )
 else:
-    print(f"Collection '{COLLECTION_NAME}' already exists.")
+    print(f"Collection '{COLLECTION_NAME}' exists")
 
 def load_saved_embeddings(path=EMBEDDINGS_PATH):
     with open(path, "r", encoding="utf-8") as f:

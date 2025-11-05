@@ -15,7 +15,7 @@ SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 creds = service_account.Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
 drive_service = build('drive', 'v3', credentials=creds)
 
-def walk_folder(folder_id, file_map):
+def walk_folder(folder_id, file_map):zip
     try:
         pdf_query = f"'{folder_id}' in parents and mimeType='application/pdf'"
         pdfs = drive_service.files().list(q=pdf_query, fields="files(id, name)").execute().get("files", [])
