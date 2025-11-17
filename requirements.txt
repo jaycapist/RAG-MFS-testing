@@ -6,6 +6,9 @@ google-auth
 google-auth-oauthlib
 uvicorn
 tqdm
+pdf2image
+pillow
+pytesseract
 python-dotenv
 pypdf
 pyMuPDF
