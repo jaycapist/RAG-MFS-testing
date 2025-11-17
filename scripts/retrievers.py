@@ -3,7 +3,7 @@ from qdrant_client.http.models import SearchParams
 import os
 import re
 from dotenv import load_dotenv
-from get_embedding import embed_query
+from scripts.get_embedding import embed_query
 from rank_bm25 import BM25Okapi
 from collections import defaultdict
 import numpy as np

@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from load_pdfs import load_pdfs
-from get_embedding import get_embedding, load_saved_embeddings
+from scripts.get_embedding import get_embedding, load_saved_embeddings
 import json
 
 TEST_DATA_DIR = "data/test/"
