@@ -9,15 +9,10 @@ import pytesseract
 from pdf2image import convert_from_path
 from PIL import Image
 
-# ---- Logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger("pdf_ocr_mvp")
 
-# Optional: Windows-specific Tesseract binary path
-# pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-
-
-def extract_pdf_pages_local(pdf_path):
+def extract_pdf_pages(pdf_path):
     """Return [{'page': n, 'text': str}] using PyMuPDF only."""
     pages = []
     doc = fitz.open(str(pdf_path))
@@ -68,7 +63,7 @@ def extract_text_from_pdf(pdf_path, min_chars_for_ocr=200):
         return "", [], False
 
     try:
-        pages = extract_pdf_pages_local(pdf_path)
+        pages = extract_pdf_pages(pdf_path)
     except Exception as e:
         log.warning(f"Failed to extract text from {pdf_path}: {e}")
         return "", [], False

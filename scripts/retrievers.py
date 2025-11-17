@@ -13,11 +13,9 @@ QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 COLL = "mfs_collection"
 client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
 
-# ---------- utils
 _rx_tok = re.compile(r"[A-Za-z0-9_]+")
 
 def toks(s: str):
-    # simple, fast tokenizer
     return [t.lower() for t in _rx_tok.findall(s or "")]
 
 def zscore(xs):
@@ -36,18 +34,16 @@ def year_in(q):
 
 def intent_priors(query, item):
     q = query.lower()
-    # payload fields assumed present
     p = item.payload or {}
     doctype = (p.get("doctype") or "").lower()
     is_draft = bool(p.get("is_draft"))
     committee = (p.get("committee") or "").lower()
     title = (p.get("title") or "").lower()
-    date_str = p.get("date")  # "YYYY-MM-DD"
+    date_str = p.get("date")
     months_decay = 0.0
     if date_str:
         dt = datetime.fromisoformat(date_str)
         months = max(0, (datetime.utcnow() - dt).days / 30.44)
-        # very mild recency prior
         months_decay = 0.5 ** (months / 18.0)
 
     boost = 0.0
@@ -55,24 +51,20 @@ def intent_priors(query, item):
     if "minutes" in q and doctype == "minutes": boost += 1.0
     if "resolution" in q and doctype == "resolution": boost += 1.0
     if "draft" not in q and is_draft: boost -= 0.5
-    # if query mentions a committee, reward match
     for tag in ["capp","sec","see","mfs"]:
         if tag in q and tag == committee:
             boost += 0.5
-    # if query year appears in title/meta
     y = year_in(q)
     if y and (str(y) in title or (p.get("session") or "").find(str(y)) != -1):
         boost += 0.3
-    # small recency
     boost += 0.2 * months_decay
     return boost
 
-# ---------- BM25 over per-doc text (title+snippet+text)
+# BM25
 def compute_bm25_scores(query, docs):
     corpus = []
     for d in docs:
         p = d.payload or {}
-        # prefer title + snippet + first chunk text
         s = " ".join(filter(None, [
             p.get("title",""),
             p.get("committee",""),
@@ -85,34 +77,33 @@ def compute_bm25_scores(query, docs):
     bm25 = BM25Okapi(corpus)
     return bm25.get_scores(toks(query))
 
-# ---------- group chunks by logical document
+# group chunks
 def group_by_doc(results):
     groups = defaultdict(list)
     for r in results:
-        # define a stable family/doc id in payload; fall back to url or base title
         fam = r.payload.get("family_id") or r.payload.get("doc_id") or r.payload.get("url") or r.payload.get("title")
         groups[fam].append(r)
     return groups
 
-# ---------- main retrieve
+# main retrieve
 def retrieve(query, k=5, alpha=0.5, use_mmr=False, lambda_param=None, prefetch=80):
     qvec = embed_query(query)
 
     hits = client.search(
         collection_name=COLL,
         query_vector=qvec,
-        limit=prefetch,              # get a decent pool
+        limit=prefetch,
         with_payload=True,
         with_vectors=True,
         search_params=SearchParams(hnsw_ef=128)
     )
     if not hits: return []
 
-    # 1) group chunks -> pick best chunk per document (doc-level ranking)
+    # 1) group chunks
     groups = group_by_doc(hits)
-    # choose each doc's best chunk by vector score
+    # choose best chunk
     doc_reps = [max(rs, key=lambda r: r.score) for rs in groups.values()]
-    # 2) hybrid relevance (BM25 + vector), both normalized per-query
+    # 2) hybrid relevance
     bm25 = compute_bm25_scores(query, doc_reps)
     bm25_n = minmax(bm25)
     vec = np.array([r.score for r in doc_reps], dtype=float)
@@ -120,19 +111,19 @@ def retrieve(query, k=5, alpha=0.5, use_mmr=False, lambda_param=None, prefetch=8
     pri = np.array([intent_priors(query, r) for r in doc_reps], dtype=float)
     pri_n = minmax(pri)
 
-    rel = alpha * bm25_n + (1 - alpha) * vec_n + 0.1 * pri_n  # small priors
+    rel = alpha * bm25_n + (1 - alpha) * vec_n + 0.1 * pri_n
 
-    # prepare doc-level vectors for diversity
+    # doc-level vectors diversity
     doc_vecs = np.vstack([np.array(r.vector) for r in doc_reps])
-    # dynamic lambda: specific queries → less diversity
+    # dynamic lambda: specific queries -> less diversity
     if lambda_param is None:
         specificity = 0
         specificity += 1 if year_in(query) else 0
         for tag in ["minutes","resolution","report","capp","sec","see","mfs"]:
             if tag in query.lower(): specificity += 1
-        lambda_param = 0.2 - 0.03 * min(specificity, 3)  # 0.2..0.11 range
+        lambda_param = 0.2 - 0.03 * min(specificity, 3)
 
-    # 3) MMR at doc level (family-aware)
+    # 3) MMR
     if use_mmr:
         selected = []
         cand = list(range(len(doc_reps)))
@@ -140,7 +131,6 @@ def retrieve(query, k=5, alpha=0.5, use_mmr=False, lambda_param=None, prefetch=8
         while len(selected) < min(k, len(cand)):
             best_i, best_score = None, -1e9
             for i in cand:
-                # diversity term is max sim to already-selected
                 if selected:
                     sim_to_sel = max(cosine_similarity([doc_vecs[i]], [doc_vecs[j]])[0][0] for j in selected)
                 else:
@@ -157,6 +147,5 @@ def retrieve(query, k=5, alpha=0.5, use_mmr=False, lambda_param=None, prefetch=8
 
     return ranked
 
-# ---------- formatting stays the same
 def format_context(results):
     return "\n\n".join(r.payload.get("text","") for r in results)
