@@ -47,6 +47,6 @@ def load_pdfs(pdf_dir="data/"):
         except Exception as e:
             print(f"Skipped {path.name}: {e}")
 
-   enrich_metadata_from_filename(docs)
+    enrich_metadata_from_filename(docs)
     print(f"Added 'year' metadata to {len(docs)} documents.")
     return docs
