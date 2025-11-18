@@ -1,9 +1,9 @@
-openai
 fastapi
 google-api-python-client
 google-auth
 google-auth-oauthlib
 nltk>=3.8
+openai>=1.0.0
 pdf2image
 pillow
 pytesseract
@@ -15,6 +15,6 @@ rank_bm25
 requests
 scikit-learn
 tenacity
-tiktoken
+tiktoken>=0.5.1
 tqdm
 uvicorn

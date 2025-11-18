@@ -18,10 +18,10 @@ QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 QDRANT_URL = os.getenv("QDRANT_URL")
 
 clientopenai = OpenAI(api_key=OPENAI_API_KEY)
-tokenizer = tiktoken.encoding_for_model("text-embedding-3-small")
+tokenizer = tiktoken.encoding_for_model("text-embedding-3-large")
 
 MAX_TOKENS = 200_000
-MAX_CHUNK_TOKENS = 10_000
+MAX_CHUNK_TOKENS = 8000
 BATCH_FILE = "embeddings.jsonl"
 COLLECTION_NAME = "mfs_collection"
 
@@ -50,7 +50,7 @@ def safe_batches(texts):
 def embed_batch(batch):
     """Call OpenAI embedding API with automatic retry."""
     return clientopenai.embeddings.create(
-        model="text-embedding-3-small",
+        model="text-embedding-3-large",
         input=batch
     )
 
@@ -154,12 +154,8 @@ def get_embedding(docs):
     print("Embedding pipeline complete")
 
 def embed_query(text: str):
-    from openai import OpenAI
-    import os
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    
-    response = client.embeddings.create(
+    response = clientopenai.embeddings.create(
         input=[text],
-        model="text-embedding-3-small"
+        model="text-embedding-3-large"
     )
     return response.data[0].embedding
