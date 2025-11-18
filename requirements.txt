@@ -1,11 +1,9 @@
 openai
-qdrant-client
 fastapi
 google-api-python-client
 google-auth
 google-auth-oauthlib
-uvicorn
-tqdm
+nltk>=3.8
 pdf2image
 pillow
 pytesseract
@@ -18,4 +16,5 @@ requests
 scikit-learn
 tenacity
 tiktoken
+tqdm
 uvicorn
