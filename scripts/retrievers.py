@@ -97,7 +97,7 @@ def group_by_doc(results):
     return groups
 
 # main retrieve
-def retrieve(query, k=5, alpha=0.5, use_mmr=False, lambda_param=None, prefetch=80):
+def retrieve(query, k=5, alpha=0.5, use_mmr=False, lambda_param=None, prefetch=300):
     qvec = embed_query_cached(query)
 
     hits = client.search(
@@ -106,7 +106,7 @@ def retrieve(query, k=5, alpha=0.5, use_mmr=False, lambda_param=None, prefetch=8
         limit=prefetch,
         with_payload=True,
         with_vectors=True,
-        search_params=SearchParams(hnsw_ef=128)
+        search_params=SearchParams(hnsw_ef=512)
     )
     if not hits: return []
 
