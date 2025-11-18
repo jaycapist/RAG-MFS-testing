@@ -2,7 +2,7 @@ import fitz
 from pathlib import Path
 from tqdm import tqdm
 from langchain_core.documents import Document
-from scripts.helpers import add_year_metadata_consistent
+from scripts.helpers import enrich_metadata_from_filename
 from scripts.pdf_extraction import extract_text_from_pdf
 import json
 GDRIVE_MAP_PATH = "scripts/gdrive_map.json"
@@ -31,9 +31,11 @@ def load_pdfs(pdf_dir="data/"):
             content = text.strip()
             if content:
                 filename = path.name
+                mod_time = datetime.datetime.fromtimestamp(path.stat().st_mtime).isoformat()
                 metadata = {
                     "source": filename,
-                    "link": get_drive_link(filename)
+                    "link": get_drive_link(filename),
+                    "modified": mod_time
                 }
                 doc = Document(
                     page_content=content,
@@ -45,6 +47,6 @@ def load_pdfs(pdf_dir="data/"):
         except Exception as e:
             print(f"Skipped {path.name}: {e}")
 
-    add_year_metadata_consistent(docs)
+   enrich_metadata_from_filename(docs)
     print(f"Added 'year' metadata to {len(docs)} documents.")
     return docs

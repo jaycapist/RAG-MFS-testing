@@ -2,6 +2,8 @@ import re
 from datetime import datetime
 from collections import Counter
 
+MISSING_DATES_LOG = "missing_dates.txt"
+
 def extract_date_from_filename(filename: str):
     patterns = [
         (r"\b(19|20)\d{2}(0[1-9]|1[0-2])([0-3]\d)\b", "ymd"),                # 20130924
@@ -36,6 +38,17 @@ def extract_date_from_filename(filename: str):
     return {}
 
 
+def log_missing(filename):
+    """Append filename to missing_dates.txt"""
+    try:
+        with open(MISSING_DATES_LOG, "a+", encoding="utf-8") as f:
+            f.seek(0)
+            existing = set(line.strip() for line in f if line.strip())
+            if filename not in existing:
+                f.write(filename + "\n")
+    except Exception as e:
+        print(f"Failed to write to `missing_date.txt`: {e}")
+
 def enrich_metadata_from_filename(docs):
     year_pattern = re.compile(r"\b(19[0-9]{2}|20[0-2][0-9]|2025)\b")
 
@@ -50,11 +63,10 @@ def enrich_metadata_from_filename(docs):
             metadata.update(file_date_info)
 
         # 2. Fallback: scan document text commented out to see missed date formats
-        # years_in_text = re.findall(year_pattern, text)
+        # years = re.findall(year_pattern, text)
         # if years_in_text:
-            # Use most common year in text
-            # most_common_year = Counter(years_in_text).most_common(1)[0][0]
-            # metadata.setdefault("year", int(most_common_year))
+            # most_common_year = Counter(years).most_common(1)[0][0]
+            # metadata["year"] = int(common_year)
 
         # Making a list to see if there are missed date formats
         else:
