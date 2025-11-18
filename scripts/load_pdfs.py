@@ -2,7 +2,7 @@ import fitz
 from pathlib import Path
 from tqdm import tqdm
 from langchain_core.documents import Document
-from helpers import add_year_metadata_consistent
+from scripts.helpers import add_year_metadata_consistent
 from scripts.pdf_extraction import extract_text_from_pdf
 import json
 GDRIVE_MAP_PATH = "scripts/gdrive_map.json"

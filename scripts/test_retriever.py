@@ -1,4 +1,4 @@
-from retrievers import retrieve
+from scripts.retrievers import retrieve
 
 if __name__ == "__main__":
     query = "Gen ed decisions after 2020"

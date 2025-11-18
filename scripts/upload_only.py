@@ -1,4 +1,3 @@
-# scripts/upload_only.py
 from qdrant_client import QdrantClient
 from scripts.get_embedding import load_saved_embeddings, upload_to_qdrant
 import os
