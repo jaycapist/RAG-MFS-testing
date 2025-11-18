@@ -9,9 +9,6 @@ from collections import defaultdict
 import numpy as np
 from datetime import datetime
 from sklearn.metrics.pairwise import cosine_similarity
-from functools import lru_cache
-
-
 
 load_dotenv()
 QDRANT_URL = os.getenv("QDRANT_URL")
