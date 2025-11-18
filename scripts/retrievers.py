@@ -120,7 +120,7 @@ def retrieve(query, k=5, alpha=0.5, use_mmr=False, lambda_param=None, prefetch=8
     rel = alpha * bm25_n + (1 - alpha) * vec_n + 0.1 * pri_n
 
     # doc-level vectors diversity
-    doc_vecs = np.vstack([np.array(r.vector) for r in doc_reps])
+    doc_vecs = np.vstack([np.array(r.vector) for r in doc_reps if r.vector is not None])
     # dynamic lambda: specific queries -> less diversity
     if lambda_param is None:
         specificity = 0
