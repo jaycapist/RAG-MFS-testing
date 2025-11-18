@@ -1,5 +1,3 @@
-# test_pipeline.py
-
 from pathlib import Path
 from scripts.load_pdfs import load_pdfs
 from scripts.get_embedding import get_embedding, load_saved_embeddings

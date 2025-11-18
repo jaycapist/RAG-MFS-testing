@@ -1,9 +1,14 @@
 from scripts.retrievers import retrieve, format_context
 from scripts.qa import answer_question, format_answer_with_sources
 
-query = "What are the recommendations in the CAPP 2024 report?"
+query = "insert query here"
 
-docs = retrieve(query)
+docs = retrieve("x", k=5)
+for doc in docs:
+    print(doc.payload.get("source"))
+    print(doc.payload.get("text")[:300])
+    print("-" * 50)
+
 
 context = format_context(docs)
 

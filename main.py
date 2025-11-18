@@ -2,18 +2,17 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
-import threading  # <--- add this
+import threading
 
 load_dotenv()
 
 from sync_drive import sync_from_drive, ensure_rclone_config
 from load_pdfs import load_pdfs
 from preprocessing import preprocess_documents
-from retrievers import build_retrievers, get_retriever_for_query
+from scripts.retrievers import build_retrievers, get_retriever_for_query
 from llm_model import get_llm
 from unified_ask import ask_unified
 
-# Move shared state into a dictionary
 state = {}
 
 class QueryInput(BaseModel):
@@ -30,7 +29,7 @@ def run_pipeline():
     bm25, vec, hybrid = build_retrievers(db, split_docs)
     llm = get_llm()
 
-    # Store in Global State
+    # Global State
     state["db"] = db
     state["bm25"] = bm25
     state["vec"] = vec
@@ -44,7 +43,6 @@ def create_app():
 
     @app.on_event("startup")
     def startup_event():
-        # Pipeline Setup in Background Thread
         threading.Thread(target=run_pipeline, daemon=True).start()
 
     @app.post("/ask")
