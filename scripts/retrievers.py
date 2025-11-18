@@ -21,11 +21,6 @@ client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
 
 _rx_tok = re.compile(r"[A-Za-z0-9_]+")
 
-# Temporarily adding caching for queries, bring up during meeting
-@lru_cache(maxsize=128)
-def embed_query_cached(q):
-    return embed_query(q)
-
 def toks(s: str):
     return [t.lower() for t in _rx_tok.findall(s or "")]
 
@@ -98,7 +93,7 @@ def group_by_doc(results):
 
 # main retrieve
 def retrieve(query, k=5, alpha=0.5, use_mmr=False, lambda_param=None, prefetch=300):
-    qvec = embed_query_cached(query)
+    qvec = embed_query(query)
 
     hits = client.search(
         collection_name=COLL,
