@@ -36,7 +36,7 @@ def extract_date_from_filename(filename: str):
     return {}
 
 
-def add_year_metadata_consistent(docs):
+def enrich_metadata_from_filename(docs):
     year_pattern = re.compile(r"\b(19[0-9]{2}|20[0-2][0-9]|2025)\b")
 
     for doc in docs:
