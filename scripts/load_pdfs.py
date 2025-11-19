@@ -1,10 +1,12 @@
-import fitz
 from pathlib import Path
 from tqdm import tqdm
+import datetime
 from langchain_core.documents import Document
 from scripts.helpers import enrich_metadata_from_filename
 from scripts.pdf_extraction import extract_text_from_pdf
 import json
+import datetime
+
 GDRIVE_MAP_PATH = "scripts/gdrive_map.json"
 
 if Path(GDRIVE_MAP_PATH).exists():

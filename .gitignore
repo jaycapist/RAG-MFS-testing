@@ -211,5 +211,6 @@ data/
 config/rclone.conf
 embeddings.jsonl
 sync_account.json
-ocr_account.json
 gdrive_map.json
+missing_dates.txt
+unknown_tokens.txt

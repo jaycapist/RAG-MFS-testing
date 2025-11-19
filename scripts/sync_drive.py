@@ -1,8 +1,5 @@
-import os
 import json
-import requests
 from pathlib import Path
-from datetime import datetime
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 

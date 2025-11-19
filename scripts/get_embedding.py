@@ -2,13 +2,12 @@ import os
 import json
 import time
 import uuid
-from tqdm import tqdm
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 from openai import OpenAI
 from qdrant_client import QdrantClient
-from qdrant_client.http.models import PointStruct
-from scripts.chunk_text import chunk_text
+from chunk_text import chunk_text
 import tiktoken
+from scripts.upload_embeddings import load_saved_embeddings, upload_to_qdrant
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -21,29 +20,35 @@ clientopenai = OpenAI(api_key=OPENAI_API_KEY)
 tokenizer = tiktoken.encoding_for_model("text-embedding-3-large")
 
 MAX_TOKENS = 200_000
-MAX_CHUNK_TOKENS = 8000
+MAX_CHUNK_TOKENS = 8191
 BATCH_FILE = "embeddings.jsonl"
 COLLECTION_NAME = "mfs_collection"
 
 def num_tokens(text):
     return len(tokenizer.encode(text))
 
+MAX_CHUNK_TOKENS = 8191
+
 def safe_batches(texts):
     """Yield batches that respect token and size limits."""
     batches, current_batch, current_tokens = [], [], 0
     for text in texts:
-        tokens = num_tokens(text)
-        if tokens > MAX_CHUNK_TOKENS:
-            print(f"Skipping oversized chunk ({tokens} tokens)")
-            continue
-        if current_tokens + tokens > MAX_TOKENS:
+        tokens = tokenizer.encode(text)
+        if len(tokens) > MAX_CHUNK_TOKENS:
+            print(f"Truncating oversized chunk ({len(tokens)} tokens)")
+            text = tokenizer.decode(tokens[:MAX_CHUNK_TOKENS])
+            tokens = tokens[:MAX_CHUNK_TOKENS]
+
+        if current_tokens + len(tokens) > MAX_TOKENS:
             batches.append(current_batch)
-            current_batch, current_tokens = [text], tokens
+            current_batch, current_tokens = [text], len(tokens)
         else:
             current_batch.append(text)
-            current_tokens += tokens
+            current_tokens += len(tokens)
+
     if current_batch:
         batches.append(current_batch)
+
     return batches
 
 @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(8))
@@ -65,43 +70,12 @@ def save_embeddings_to_disk(texts, embeddings, metadata_list, path="embeddings.j
             }
             f.write(json.dumps(data) + "\n")
 
-def load_saved_embeddings(path=BATCH_FILE):
-    if not os.path.exists(path):
-        return []
-    with open(path, "r", encoding="utf-8") as f:
-        return [json.loads(line) for line in f]
-
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 
 @retry(wait=wait_random_exponential(min=1, max=30), stop=stop_after_attempt(5))
 def safe_upsert(client, collection_name, points):
     """Handles transient upload issues with automatic retry."""
     client.upsert(collection_name=collection_name, points=points)
-
-
-def upload_to_qdrant(data, qdrant, batch_size=100):
-    print(f"Uploading {len(data)} embeddings to Qdrant")
-
-    for i in range(0, len(data), batch_size):
-        batch = data[i:i+batch_size]
-        points = [
-            PointStruct(
-                id=item["id"],
-                vector=item["embedding"],
-                payload={
-                    "text": item["text"],
-                    **item.get("metadata", {})
-                }
-            )
-            for item in batch
-        ]
-
-        try:
-            safe_upsert(qdrant, COLLECTION_NAME, points)
-            print(f"Uploaded batch {i//batch_size + 1} ({len(points)} points)")
-            time.sleep(0.5)
-        except Exception as e:
-            print(f"Failed to upload batch : {i//batch_size + 1} : {e}")
 
 def get_embedding(docs):
     qdrant = QdrantClient(
@@ -126,7 +100,7 @@ def get_embedding(docs):
 
 
     if not remaining:
-        print("All chunks already embedded.")
+        print("All chunks already embedded")
         upload_to_qdrant(saved, qdrant)
         return
 
@@ -134,7 +108,7 @@ def get_embedding(docs):
 
     texts, metadatas = zip(*remaining)
     batches = safe_batches(texts)
-    print(f"Created {len(batches)} safe batches.")
+    print(f"Created {len(batches)} safe batches")
 
     for i, batch in enumerate(batches, 1):
         print(f"Embedding batch {i}/{len(batches)} ({len(batch)} chunks)")

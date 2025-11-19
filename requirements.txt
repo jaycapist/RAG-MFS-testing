@@ -2,7 +2,10 @@ fastapi
 google-api-python-client
 google-auth
 google-auth-oauthlib
+langchain_core
+langchain_nomic
 nltk>=3.8
+nomic
 openai>=1.0.0
 pdf2image
 pillow
@@ -10,7 +13,7 @@ pytesseract
 python-dotenv
 pypdf
 pyMuPDF
-qdrant-client
+qdrant_client
 rank_bm25
 requests
 scikit-learn

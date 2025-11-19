@@ -95,7 +95,7 @@ def test_pdf_extraction(pdf_dir="data/", min_chars_for_ocr=200):
             print(f"  preview: {sample['text'][:140]!r}")
         else:
             print("  preview: <empty> (mark as needs_ocr)")
-        print("-" * 80)
+        print("-" * 50)
 
 
 if __name__ == "__main__":

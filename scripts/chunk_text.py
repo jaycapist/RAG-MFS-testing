@@ -26,6 +26,7 @@ def chunk_text(text, max_tokens=400, overlap=100):
     except LookupError:
         import nltk
         nltk.download("punkt")
+        nltk.download("punkt_tab")
         sentences = sent_tokenize(text)
 
     chunks = []

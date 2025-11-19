@@ -9,7 +9,7 @@ load_dotenv()
 from sync_drive import sync_from_drive, ensure_rclone_config
 from load_pdfs import load_pdfs
 from preprocessing import preprocess_documents
-from scripts.retrievers import build_retrievers, get_retriever_for_query
+from retrievers import build_retrievers, get_retriever_for_query
 from llm_model import get_llm
 from unified_ask import ask_unified
 

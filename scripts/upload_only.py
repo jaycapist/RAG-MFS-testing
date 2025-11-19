@@ -1,5 +1,5 @@
 from qdrant_client import QdrantClient
-from scripts.get_embedding import load_saved_embeddings, upload_to_qdrant
+from scripts.upload_embeddings import load_saved_embeddings, upload_to_qdrant
 import os
 from dotenv import load_dotenv
 

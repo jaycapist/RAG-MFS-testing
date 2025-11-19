@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from scripts.retrievers import retrieve, format_context  # use the improved retriever
+from scripts.retrievers import retrieve, format_context
 from scripts.qa import answer_question
 
 app = FastAPI()

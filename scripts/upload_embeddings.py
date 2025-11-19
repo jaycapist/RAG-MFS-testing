@@ -48,12 +48,6 @@ def upload_to_qdrant(data, qdrant, batch_size=100):
     for i in range(0, len(data), batch_size):
         batch = data[i:i+batch_size]
 
-        # Check embedding lengths
-        for item in batch:
-            if len(item["embedding"]) != EMBEDDING_SIZE:
-                print(f"Skipping bad vector size:  ({len(item['embedding'])}): {item['id']}")
-                continue
-
         points = [
             PointStruct(
                 id=item["id"],
