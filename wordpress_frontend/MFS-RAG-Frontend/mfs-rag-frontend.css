@@ -1,0 +1,13 @@
+/*
+Plugin Name: Minimal API
+Description: Minimal plugin with persistent input via REST API.
+Version: 1.0
+Author: Kyle Bueche
+
+Shortcode: [mfs_rag_frontend]
+*/
+
+.documents {
+}
+.document-entry {
+}
