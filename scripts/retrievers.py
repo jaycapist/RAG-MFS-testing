@@ -91,6 +91,8 @@ def group_by_doc(results):
 # main retrieve
 def retrieve(query, k=5, alpha=0.5, use_mmr=False, lambda_param=None, prefetch=300):
     qvec = embed_query(query)
+    print(f"QdrantClient: {type(client)}")
+    print(f"Has 'search': {'search' in dir(client)}")
 
     hits = client.search(
         collection_name=COLL,
