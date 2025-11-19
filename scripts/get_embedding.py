@@ -5,7 +5,7 @@ import uuid
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 from openai import OpenAI
 from qdrant_client import QdrantClient
-from chunk_text import chunk_text
+from scripts.chunk_text import chunk_text
 import tiktoken
 from scripts.upload_embeddings import load_saved_embeddings, upload_to_qdrant
 
