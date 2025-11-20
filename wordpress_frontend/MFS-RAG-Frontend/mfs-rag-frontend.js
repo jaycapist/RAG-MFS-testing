@@ -9,7 +9,7 @@ Shortcode: [mfs_rag_frontend]
 
 async function queryragapi() {
     let ragOutputText = document.getElementById("rag-output-generative-text");
-    ragOutputText.innerHTML = "Finding Documents...";
+    ragOutputText.innerHTML = "<div class='loading-text'>🔍 Finding Documents...</div>";
     const input = document.getElementById("rag-input").value;
 
     console.log("starting api fetch...");
@@ -51,7 +51,10 @@ function outputDocuments() {
 
     for (let i = 0; i < documents.length; i++) {
         const documentEntry = `
-        <a target="_blank" href="${documents[i].docUrl}" class="document-entry">${documents[i].docTitle}</a>
+        <div class="document-entry">
+            <h4><a target="_blank" href="${documents[i].docUrl}" class="document-link">${documents[i].docTitle}</a></h4>
+            <div class="document-meta">Click to view document</div>
+        </div>
         `
         const wrapper = document.createElement('div');
         wrapper.innerHTML = documentEntry;

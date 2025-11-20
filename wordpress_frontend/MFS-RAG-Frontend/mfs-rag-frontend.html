@@ -8,10 +8,29 @@ Shortcode: [mfs_rag_frontend]
 -->
 <link rel="stylesheet" href="mfs-rag-frontend.css">
 <script src="mfs-rag-frontend.js"></script>
-<h3>RAG Search for UHMFS Public Documents Archive</h3>
-<hr>
-<h5>Search for documents:</h5>
-<textarea id="rag-input" rows=4 cols=50 placeholder="Search here..."></textarea>
-<button id="myButton">Search</button>
-<p id="rag-output-generative-text">Output will appear here.</p>
-<div id="rag-output-documents" class="documents"></div>
+<div class="rag-container">
+    <div class="rag-header">
+        <h1 class="rag-title">RAG Search</h1>
+        <p class="rag-subtitle">UHMFS Public Documents Archive</p>
+    </div>
+    
+    <div class="rag-search-section">
+        <label for="rag-input" class="rag-label">Search for documents:</label>
+        <div class="rag-input-wrapper">
+            <textarea 
+                id="rag-input" 
+                rows="4" 
+                placeholder="Enter your search query here..."></textarea>
+            <button id="myButton" class="rag-search-button">
+                <span class="button-text">Search</span>
+            </button>
+        </div>
+    </div>
+    
+    <div class="rag-results-section">
+        <div id="rag-output-generative-text" class="rag-output-text">
+            <div class="placeholder-text">Your search results will appear here...</div>
+        </div>
+        <div id="rag-output-documents" class="documents"></div>
+    </div>
+</div>
