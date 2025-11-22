@@ -13,7 +13,7 @@ pytesseract
 python-dotenv
 pypdf
 pyMuPDF
-qdrant-client
+qdrant-client==1.7.3
 rank_bm25
 requests
 scikit-learn
