@@ -13,7 +13,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 load_dotenv()
 QDRANT_URL = os.getenv("QDRANT_URL")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
-COLL = "mfs_collection_test"
+COLL = "mfs_collection"
 client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
 
 _rx_tok = re.compile(r"[A-Za-z0-9_]+")
