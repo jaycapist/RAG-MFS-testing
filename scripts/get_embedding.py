@@ -130,6 +130,6 @@ def get_embedding(docs):
 def embed_query(text: str):
     response = clientopenai.embeddings.create(
         input=[text],
-        model="text-embedding-3-large"
+        model="text-embedding-3-small"
     )
     return response.data[0].embedding
