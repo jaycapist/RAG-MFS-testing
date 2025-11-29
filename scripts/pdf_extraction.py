@@ -1,13 +1,9 @@
 import fitz
-import io
 import logging
-import os
 from pathlib import Path
-from datetime import datetime
 
 import pytesseract
 from pdf2image import convert_from_path
-from PIL import Image
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger("pdf_ocr_mvp")

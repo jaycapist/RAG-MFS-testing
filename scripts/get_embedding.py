@@ -5,8 +5,8 @@ from tenacity import retry, wait_random_exponential, stop_after_attempt
 from qdrant_client import QdrantClient
 from openai import OpenAI
 import numpy
-from chunk_text import chunk_text, truncate_guard
-from upload_embeddings import load_saved_embeddings, upload_to_qdrant
+from scripts.chunk_text import chunk_text, truncate_guard
+from scripts.upload_embeddings import load_saved_embeddings, upload_to_qdrant
 
 from dotenv import load_dotenv
 load_dotenv()

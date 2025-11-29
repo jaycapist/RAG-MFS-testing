@@ -2,8 +2,8 @@ from pathlib import Path
 from tqdm import tqdm
 import datetime
 from langchain_core.documents import Document
-from helpers import enrich_metadata_from_filename
-from pdf_extraction import extract_text
+from scripts.helpers import enrich_metadata_from_filename
+from scripts.pdf_extraction import extract_text
 import json
 
 GDRIVE_MAP_PATH = "scripts/gdrive_map.json" # VARIABLE

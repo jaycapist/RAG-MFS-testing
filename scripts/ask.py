@@ -1,6 +1,6 @@
-from retrievers import retrieve, format_context
-from qa import answer_question
-from printer import format_answer_with_sources_json
+from scripts.retrievers import retrieve, format_context
+from scripts.qa import answer_question
+from scripts.printer import format_answer_with_sources_json
 import json
 
 # Test query

@@ -1,5 +1,5 @@
-from load_pdfs import load_pdfs
-from get_embedding import get_embedding
+from scripts.load_pdfs import load_pdfs
+from scripts.get_embedding import get_embedding
 
 docs = load_pdfs("data/") # VARIABLE
 print(f"Loaded {len(docs)} documents")
