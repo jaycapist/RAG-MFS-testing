@@ -13,7 +13,7 @@ load_dotenv()
 # Qdrant config
 QDRANT_URL = os.getenv("QDRANT_URL")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
-COLLECTION_NAME = "mfs_collection"
+COLLECTION_NAME = "mfs_collection" # Variable
 qdrant = QdrantClient(
     url=QDRANT_URL,
     api_key=QDRANT_API_KEY,

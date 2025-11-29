@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import Optional, Dict, Union
 from fastapi.middleware.cors import CORSMiddleware
 
 from scripts.retrievers import retrieve, format_context
 from scripts.qa import answer_question
 from scripts.printer import format_answer_with_sources_json
+from scripts.helpers import extract_filters
 
 app = FastAPI()
 
@@ -20,31 +20,28 @@ app.add_middleware(
 # Model
 class QueryRequest(BaseModel):
     query: str
-    k: int = 15
-    alpha: float = 0.3
-    metadata: Optional[Dict[str, Union[str, int]]] = None
-
-    return_all_chunks: bool = True
-
 
 # API endpoint
 @app.post("/query")
 def query_api(request: QueryRequest):
     try:
-        # Retrieve docs
+        K = 15
+        ALPHA = 0.30
+        RETURN_ALL_CHUNKS = True
+
+        metadata = extract_filters(request.query)
+
         results = retrieve(
             query=request.query,
-            k=request.k,
-            alpha=request.alpha,
-            metadata=request.metadata,
-            return_all_chunks=request.return_all_chunks
+            k=K,
+            alpha=ALPHA,
+            metadata=metadata,
+            return_all_chunks=RETURN_ALL_CHUNKS
         )
 
-        # LLM context
         context = format_context(results)
-
-        # Answer
         answer = answer_question(context, request.query)
+
         return format_answer_with_sources_json(answer, results)
 
     except Exception as e:

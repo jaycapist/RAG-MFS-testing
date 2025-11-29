@@ -20,7 +20,7 @@ def ensure_index(field_name: str, schema_type: str):
             field_name=field_name,
             field_schema=schema_type,   # STRING, NOT DICT
         )
-        print(f"✔ Index created for {field_name}")
+        print(f"Index created for {field_name}")
     except Exception as e:
         msg = str(e).lower()
         if "already exists" in msg or "exists in" in msg:

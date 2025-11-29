@@ -46,7 +46,6 @@ def group_by_doc(chunks: List[ScoredPoint]) -> Dict[str, List[ScoredPoint]]:
             r.payload.get("family_id") or
             r.payload.get("doc_id") or
             r.payload.get("url") or
-            r.payload.get("title") or
             r.payload.get("source") or
             str(r.id)
         )

@@ -267,3 +267,77 @@ def enrich_metadata_from_filename(docs):
         metadata.update(date_info)
         metadata.update(semantic_info)
         doc.metadata = metadata
+
+def extract_filters(query: str):
+    """
+    Parse a natural-language query and convert it into Qdrant metadata filters.
+    Uses the same canonical maps and logic as filename extraction.
+    """
+    q = query.lower()
+    filters = {}
+
+    tokens = re.findall(r"[a-zA-Z0-9]+", q)
+
+    year_match = re.search(r"\b(19|20)\d{2}\b", q)
+    if year_match:
+        filters["year"] = int(year_match.group())
+
+    yr_range = re.search(r"\b((19|20)\d{2})[-–](\d{2}|\d{4})\b", q)
+    if yr_range:
+        y1 = int(yr_range.group(1))
+        y2_raw = yr_range.group(3)
+        y2 = int(y2_raw) if len(y2_raw) == 4 else (y1 // 100) * 100 + int(y2_raw)
+        filters["year_range"] = f"{y1}-{y2}"
+
+    for t in tokens:
+        low = t.lower()
+        if low in BODY_OR_COMMITTEE_MAP:
+            filters["committee_codes"] = BODY_OR_COMMITTEE_MAP[low]
+            break
+
+    for k in FILE_TYPE_KEYWORDS:
+        if k in q:
+            filters["file_type"] = FILE_TYPE_KEYWORDS[k]
+            break
+
+    for k in STANCE_MAP:
+        if k in q:
+            filters["stance"] = STANCE_MAP[k]
+            break
+
+    for k in ACTION_TYPE_MAP:
+        if k in q:
+            filters["action_type"] = ACTION_TYPE_MAP[k]
+            break
+
+    for k in STATUS_MAP:
+        if k in q:
+            filters["status"] = STATUS_MAP[k]
+            break
+    
+    for k in TOPIC_MAP:
+        if k in q:
+            filters["topic"] = TOPIC_MAP[k]
+            break
+
+    for k in META_MAP:
+        if k in q:
+            filters["meta"] = META_MAP[k]
+            break
+
+    MONTH_MAP = {m.lower(): m for m in calendar.month_name if m}
+    for m_low, m_full in MONTH_MAP.items():
+        if m_low in q:
+            filters["months"] = [m_full]
+            break
+
+    sem_match = re.search(r"\b(fall|spring|summer)\b", q)
+    if sem_match and "semester" not in filters:
+        filters["semester"] = sem_match.group(1).capitalize()
+
+    sem_year_match = re.search(r"\b(fall|spring|summer)\s*(19|20)\d{2}\b", q)
+    if sem_year_match:
+        filters["semester"] = sem_year_match.group(1).capitalize()
+        filters["year"] = int(sem_year_match.group(2))
+
+    return filters
