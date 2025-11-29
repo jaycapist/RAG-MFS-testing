@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from typing import Optional, Dict, Union
 from fastapi.middleware.cors import CORSMiddleware
-from scripts.retrievers import retrieve, format_context
-from scripts.qa import answer_question
+
+from retrievers import retrieve, format_context
+from qa import answer_question
+from printer import format_answer_with_sources_json
 
 app = FastAPI()
 
@@ -14,30 +17,36 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Define incoming request model
+# Model
 class QueryRequest(BaseModel):
     query: str
-    k: int = 5
-    alpha: float = 0.5  # vector <---> BM25
-    use_mmr: bool = False
-    lambda_param: float = 0.5
+    k: int = 15
+    alpha: float = 0.3
+    metadata: Optional[Dict[str, Union[str, int]]] = None
 
+    return_all_chunks: bool = True
+
+
+# API endpoint
 @app.post("/query")
 def query_api(request: QueryRequest):
     try:
+        # Retrieve docs
         results = retrieve(
             query=request.query,
             k=request.k,
             alpha=request.alpha,
-            use_mmr=request.use_mmr,
-            lambda_param=request.lambda_param
+            metadata=request.metadata,
+            return_all_chunks=request.return_all_chunks
         )
+
+        # LLM context
         context = format_context(results)
+
+        # Answer
         answer = answer_question(context, request.query)
-        return {
-            "answer": answer,
-            "documents": [r.payload.get("text", "") for r in results]
-        }
+        return format_answer_with_sources_json(answer, results)
+
     except Exception as e:
         import traceback
         traceback.print_exc()

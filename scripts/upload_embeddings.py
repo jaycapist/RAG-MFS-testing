@@ -3,16 +3,24 @@ import json
 import time
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
+from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.http.models import PointStruct, VectorParams, Distance
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 from pathlib import Path
 
 load_dotenv()
 
+# Qdrant config
 QDRANT_URL = os.getenv("QDRANT_URL")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 COLLECTION_NAME = "mfs_collection"
-EMBEDDINGS_PATH = "embeddings.jsonl"
+qdrant = QdrantClient(
+    url=QDRANT_URL,
+    api_key=QDRANT_API_KEY,
+)
+
+# Embeddings info
+EMBEDDINGS_PATH = "embeddings.jsonl" # VARIABLE
 EMBEDDING_SIZE = 3072  # text-embedding-3-large
 
 def load_saved_embeddings(path=EMBEDDINGS_PATH):
@@ -28,11 +36,20 @@ def load_saved_embeddings(path=EMBEDDINGS_PATH):
 def safe_upsert(client, collection_name, points):
     client.upsert(collection_name=collection_name, points=points)
 
+# Check that `mfs_collection` exists
+def collection_exists(client: QdrantClient, name: str) -> bool:
+    try:
+        client.get_collection(name)
+        return True
+    except UnexpectedResponse:
+        return False
+    except Exception:
+        return False
+    
 def upload_to_qdrant(data, qdrant, batch_size=100):
     print(f"Prepping to upload {len(data)} embeddings")
 
-    # Ensure collection exists
-    if not qdrant.collection_exists(COLLECTION_NAME):
+    if not collection_exists(qdrant, COLLECTION_NAME):
         print(f"Collection '{COLLECTION_NAME}' not found \nCreating '{COLLECTION_NAME}'")
         qdrant.create_collection(
             collection_name=COLLECTION_NAME,
@@ -66,7 +83,7 @@ def upload_to_qdrant(data, qdrant, batch_size=100):
             print(f"Failed batch : {i // batch_size + 1} : {e}")
 
 if __name__ == "__main__":
-    print("Loading saved embeddings...")
+    print("Loading saved embeddings:")
     data = load_saved_embeddings()
 
     print(f"Found {len(data)} embeddings")
@@ -74,11 +91,6 @@ if __name__ == "__main__":
     if not data:
         print("No embeddings to upload")
         exit()
-
-    qdrant = QdrantClient(
-        url=QDRANT_URL,
-        api_key=QDRANT_API_KEY,
-    )
 
     print("Uploading")
     upload_to_qdrant(data, qdrant)

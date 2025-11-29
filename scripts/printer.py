@@ -1,20 +1,52 @@
-def format_answer_with_sources(answer: str, docs, preview=150):
-    print("\nResponse:")
-    print(answer.strip())
-    
-    print("\nList of documents used:")
+import json
+
+def format_answer_with_sources_json(answer: str, docs, preview=150):
     seen = set()
+    sources = []
+
     for d in docs:
-        src = d.payload.get("source", "unknown")
-        
+        payload = d.payload or {}
+        src = payload.get("source", "unknown")
         if src in seen:
             continue
         seen.add(src)
 
-        link = d.payload.get("link", "<no link>")
-        snippet = d.payload.get("text", "").replace("\n", " ").strip()[:preview]
+        source_entry = {
+            "source": src,
+            "link": payload.get("link"),
+            "file_type": payload.get("file_type"),
 
-        if not snippet:
-            snippet = "(No visible content)"
-        
-        print(f"{src} {link}  # {snippet}...")
+            # Group codes
+            "committee_codes": payload.get("committee_codes", []), # list
+            "body_code": payload.get("body_code"),
+
+            # Dates
+            "full_date": payload.get("full_date"),
+            "year": payload.get("year"),
+            "semester": payload.get("semester"),
+            "month": payload.get("month", []), # list
+
+            # Extra
+            "stance": payload.get("stance", []), # list
+            "topic": payload.get("topic", []), # list
+            "meta": payload.get("meta", []), # list
+            "status": payload.get("status"),
+            "action_type": payload.get("action_type"),
+
+            "snippet": (
+                (payload.get("text") or "")
+                .replace("\n", " ")
+                .strip()[:preview]
+                or None
+            ),
+        }
+
+        sources.append(source_entry)
+
+    result = {
+        "answer": answer.strip(),
+        "sources": sources
+    }
+
+    print(json.dumps(result, indent=2))
+    return result

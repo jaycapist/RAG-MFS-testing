@@ -2,12 +2,11 @@ from pathlib import Path
 from tqdm import tqdm
 import datetime
 from langchain_core.documents import Document
-from scripts.helpers import enrich_metadata_from_filename
-from scripts.pdf_extraction import extract_text_from_pdf
+from helpers import enrich_metadata_from_filename
+from pdf_extraction import extract_text
 import json
-import datetime
 
-GDRIVE_MAP_PATH = "scripts/gdrive_map.json"
+GDRIVE_MAP_PATH = "scripts/gdrive_map.json" # VARIABLE
 
 if Path(GDRIVE_MAP_PATH).exists():
     with open(GDRIVE_MAP_PATH) as f:
@@ -24,12 +23,12 @@ def get_drive_link(filename):
 def load_pdfs(pdf_dir="data/"):
     pdf_dir = Path(pdf_dir)
     pdf_paths = sorted(pdf_dir.rglob("*.pdf"))
-    print(f"Scanning {len(pdf_paths)} PDFs in {pdf_dir.resolve()} ...")
+    print(f"Scanning {len(pdf_paths)} PDFs in {pdf_dir.resolve()}")
 
     docs = []
     for path in tqdm(pdf_paths, desc="Loading PDFs", unit="file"):
         try:
-            text, pages, used_ocr = extract_text_from_pdf(str(path))
+            text, pages, used_ocr = extract_text(str(path))
             content = text.strip()
             if content:
                 filename = path.name

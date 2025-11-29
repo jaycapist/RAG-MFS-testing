@@ -1,51 +1,47 @@
 import re
-from nltk.tokenize import sent_tokenize
+import tiktoken
 
-def chunk_text(text, max_tokens=400, overlap=100):
+encoding = tiktoken.encoding_for_model("text-embedding-3-large")
+MAX_EMBEDDING_TOKENS = 8191
+
+def count_tokens(text):
+    return len(encoding.encode(text))
+
+def chunk_text(text, max_tokens=2000, overlap=200):
     """
-    Chunk using a sentence-based sliding window
-    Fall back to paragraph chunking for longer documents
-
-    Args:
-        text (str): raw document text
-        max_tokens (int): max number of words per chunk.
-        overlap (int): number of words to overlap between chunks.
-
-    Returns:
-        List[str]: List of text chunks.
+    True token-based chunker for OpenAI embeddings.
+    Ensures no chunk ever exceeds model token limits.
     """
+
     if not text.strip():
         return []
 
-    # normalise spacing
-    text = re.sub(r'\n{2,}', '\n\n', text.strip())
+    # Normalise spacing a bit
+    text = re.sub(r"\s+", " ", text).strip()
 
-    # sentence tokenisation
-    try:
-        sentences = sent_tokenize(text)
-    except LookupError:
-        import nltk
-        nltk.download("punkt")
-        nltk.download("punkt_tab")
-        sentences = sent_tokenize(text)
-
+    tokens = encoding.encode(text)
     chunks = []
-    current_chunk = []
-    current_length = 0
 
-    for sentence in sentences:
-        token_count = len(sentence.split())
-        if current_length + token_count > max_tokens:
-            if current_chunk:
-                chunks.append(" ".join(current_chunk))
-            # Start with overlap
-            current_chunk = current_chunk[-overlap:] if overlap else []
-            current_length = sum(len(s.split()) for s in current_chunk)
+    start = 0
+    end = min(len(tokens), max_tokens)
 
-        current_chunk.append(sentence)
-        current_length += token_count
+    while start < len(tokens):
+        chunk_tokens = tokens[start:end]
+        chunk_text = encoding.decode(chunk_tokens)
+        chunks.append(chunk_text)
 
-    if current_chunk:
-        chunks.append(" ".join(current_chunk))
+        # Move to next window
+        start = end - overlap
+        if start < 0:
+            start = 0
+
+        end = start + max_tokens
 
     return chunks
+
+def truncate_guard(text):
+    tokens = encoding.encode(text)
+    if len(tokens) > MAX_EMBEDDING_TOKENS:
+        print(f"Truncating long chunk ({len(tokens)} tokens)")
+        return encoding.decode(tokens[:MAX_EMBEDDING_TOKENS])
+    return text
