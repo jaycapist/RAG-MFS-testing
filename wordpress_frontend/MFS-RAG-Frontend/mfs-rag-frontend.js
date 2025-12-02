@@ -1,7 +1,7 @@
 /*
 Plugin Name: Minimal API
 Description: Minimal plugin with persistent input via REST API.
-Version: 1.0
+Version: 1.01
 Author: Kyle Bueche
 
 Shortcode: [mfs_rag_frontend]
@@ -24,35 +24,15 @@ async function queryragapi() {
     const data = await response.json();
     console.log(data);
     ragOutputText.innerHTML = data.answer;
-}
-function outputDocuments() {
+    
     ragOutputDocuments = document.getElementById("rag-output-documents");
-    documents = [];
-    documents.push({
-        docUrl: "https://drive.google.com/file/d/1outes8jvthnMdauDKI8c7f2zejPqkHwh/preview",
-        docTitle: "Senate_Aloha_Resolution"
-    });
-    documents.push({
-        docUrl: "https://drive.google.com/file/d/1outes8jvthnMdauDKI8c7f2zejPqkHwh/preview",
-        docTitle: "Another_Resolution"
-    });
-    documents.push({
-        docUrl: "https://drive.google.com/file/d/1outes8jvthnMdauDKI8c7f2zejPqkHwh/preview",
-        docTitle: "Senate_Document"
-    });
-    documents.push({
-        docUrl: "https://drive.google.com/file/d/1outes8jvthnMdauDKI8c7f2zejPqkHwh/preview",
-        docTitle: "Senate_Example_Resolution"
-    });
-    documents.push({
-        docUrl: "https://drive.google.com/file/d/1outes8jvthnMdauDKI8c7f2zejPqkHwh/preview",
-        docTitle: "Senate_Example_Resolution_2"
-    });
 
-    for (let i = 0; i < documents.length; i++) {
+    for (let i = 0; i < data.sources.length; i++) {
+        const sourceName = data.sources[i].source;
+        const sourceLink = data.sources[i].link;
         const documentEntry = `
         <div class="document-entry">
-            <h4><a target="_blank" href="${documents[i].docUrl}" class="document-link">${documents[i].docTitle}</a></h4>
+            <h4><a target="_blank" href="${sourceLink}" class="document-link">${sourceName}</a></h4>
             <div class="document-meta">Click to view document</div>
         </div>
         `
@@ -60,10 +40,10 @@ function outputDocuments() {
         wrapper.innerHTML = documentEntry;
         ragOutputDocuments.appendChild(wrapper);
     }
-};
+}
 
 window.onload = function() {
     document.getElementById("myButton").onclick = function () {
-        outputDocuments();
+        queryragapi();
     };
 }

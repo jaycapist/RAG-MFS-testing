@@ -1,8 +1,8 @@
 <?php
 /*
-Plugin Name: Minimal API
-Description: Minimal plugin with persistent input via REST API.
-Version: 1.0
+Plugin Name: MFS Rag Frontend
+Description: Frontend for the Manoa Faculty Senate RAG System. Use Shortcode [mfs_rag_frontend]
+Version: 1.01
 Author: Kyle Bueche
 
 Shortcode: [mfs_rag_frontend]
@@ -28,11 +28,11 @@ wp_enqueue_script(handle, src, deps, ver, args[strategy, in_footer])
 function load_js_from_file() {
     wp_enqueue_script(
         'mfs-rag-frontend-script',
-        get_template_directory_uri() . 'mfs-rag-frontend.js',
+        plugins_url( 'mfs-rag-frontend.js', __FILE__ ),
         array(),
         '1.0.0',
         array(
-            'strategy' => defer, // Only run once DOM tree has fully loaded
+            'strategy' => 'defer', // Only run once DOM tree has fully loaded
             'in_footer' => false
         )
     );
@@ -46,7 +46,7 @@ wp_enqueue_script(handle, src, deps, ver, media)
 function load_css_from_file() {
     wp_enqueue_style(
         'mfs-rag-frontend-style',
-        get_template_directory_uri() . 'mfs-rag-frontend.css',
+        plugins_url( 'mfs-rag-frontend.css', __FILE__ ),
         array(),
         '1.0.0',
         'all' // Defined for all media types
@@ -58,7 +58,7 @@ Parses HTML from file, and returns it as what the shortcode expects.
 */
 function load_html_from_file() {
     ob_start();
-    include( get_template_directory() . 'mfs-rag-frontend.html' );
+    include( 'mfs-rag-frontend.html' );
     $html_content = ob_get_clean();
     return $html_content;
 }
